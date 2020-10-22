@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
                     if (r1 == r2) {
                         solutionCount++;
                         printf("Solution found (a, b, c, d) = (%.2lf,  %.2lf, %.2lf, %.2lf)\n",
-                               (double)a / 100, (double)b / 100, (double)c / 100, d1 / 100);
+                               (double) a / 100, (double) b / 100, (double) c / 100, d1 / 100);
                     }
                 }
 
