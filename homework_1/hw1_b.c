@@ -13,20 +13,21 @@ int main(int argc, char **argv) {
     for (int a = 1; a < totalCost; a += increment) {
         for (int b = 1; b < totalCost; b += increment) {
             for (int c = 1; c < totalCost; c += increment) {
-                for (int d = 1; d < totalCost; d += increment) {
-                    // $3.16, $1.50, $1.25, and $1.20
-                    int sum = a + b + c + d;
-                    int product = a * b * c * d;
+                double d1 = totalCost - (a + b + c);
+                double d2 = 711000000 / (a * b * c);
 
-                    if ((sum == 711) && (product == 711000000)) {
+                if (d1 == d2) {
+                    long r1 = (a + b + c + d1);
+                    long r2 = (a * b * c * d1 / 1000000);
+
+                    if (r1 == r2) {
                         solutionCount++;
-                        printf("Solution found (a, b, c, d) = (%.2lf, %.2lf, %.2lf, %.2lf)\n",
-                               (double)a / 100, (double)b / 100, (double)c / 100, (double)d / 100);
-                        fflush(stdout);
+                        printf("Solution found (a, b, c, d) = (%.2lf,  %.2lf, %.2lf, %.2lf)\n",
+                               (double)a / 100, (double)b / 100, (double)c / 100, d1 / 100);
                     }
-
-                    numberOfCalls++;
                 }
+
+                numberOfCalls++;
             }
         }
     }
