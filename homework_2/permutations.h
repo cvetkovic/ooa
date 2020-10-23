@@ -2,8 +2,8 @@
 // Created by jugos000 on 23-Oct-20.
 //
 
-#ifndef TESTGROUND_PERMUTATIONS_H
-#define TESTGROUND_PERMUTATIONS_H
+#ifndef HOMEWORK_2_PERMUTATIONS_H
+#define HOMEWORK_2_PERMUTATIONS_H
 
 #include <iostream>
 
@@ -100,4 +100,4 @@ uint64_t *Permutations::GetCurrentAsPtr(uint64_t *ptr) {
     return ptr;
 }
 
-#endif //TESTGROUND_PERMUTATIONS_H
+#endif //HOMEWORK_2_PERMUTATIONS_H

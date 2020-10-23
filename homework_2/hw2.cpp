@@ -1,6 +1,11 @@
+#ifndef HOMEWORK_2_H
+#define HOMEWORK_2_H
+
 #include <chrono>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "permutations.h"
 
@@ -97,6 +102,16 @@ double CalculateScore(Point *p, const uint64_t *permutation, int permutationLeng
 }
 
 int main(int argc, char **argv) {
+    uint64_t permutationLength;
+
+    if (argc != 2) {
+        cout << "ERROR: Please provide the number holes for the search!" << endl;
+        return 1;
+    }
+
+    istringstream iss(argv[1]);
+    iss >> permutationLength;
+
     const int n = 20;
     Point *points = new Point[n];
     PopulatePointsTable(points, n);
@@ -105,8 +120,6 @@ int main(int argc, char **argv) {
     for (int i = 0; i < n; i++)
         cout << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;
 #endif
-
-    uint64_t permutationLength = 11;
 
     Permutations permutations(permutationLength);
 
@@ -120,12 +133,17 @@ int main(int argc, char **argv) {
         float currentScore = CalculateScore(points, current, permutationLength);
 
         if (currentScore < minimumScore) {
+            if (minimumScore != MAXFLOAT)
+                cout << "Previous minimum score was: " << setprecision(7) << minimumScore << endl;
+
             minimumScore = currentScore;
             minimumPermutation = permutations.GetCurrentAsPtr(minimumPermutation);
         }
 
         permutations.Next();
     }
+
+    cout << "--------------------------" << endl;
 
     auto end = high_resolution_clock::now();
 
@@ -151,3 +169,5 @@ int main(int argc, char **argv) {
         delete[] minimumPermutation;
     delete[] points;
 }
+
+#endif
