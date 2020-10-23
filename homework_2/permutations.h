@@ -17,7 +17,7 @@ private:
     bool hasNext = true;
 
 public:
-    Permutations(uint64_t length) : length(length) {
+    explicit Permutations(uint64_t length) : length(length) {
         number = new uint64_t[length];
 
         for (uint64_t i = 0; i < length; i++)
@@ -28,13 +28,13 @@ public:
         delete[] number;
     }
 
-    const uint64_t *const GetCurrent() const {
+    const uint64_t *GetCurrent() const {
         return number;
     }
 
     void Next();
 
-    bool HasNext();
+    bool HasNext() const;
 
     friend ostream &operator<<(ostream &os, const Permutations &permutations) {
         for (uint64_t i = 0; i < permutations.length; i++)
@@ -86,7 +86,7 @@ void Permutations::Next() {
     }
 }
 
-bool Permutations::HasNext() {
+bool Permutations::HasNext() const {
     return hasNext;
 }
 

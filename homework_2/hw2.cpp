@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 #include "permutations.h"
@@ -17,11 +18,9 @@ struct Point {
     float y;
 
     Point() : x(0), y(0) {}
-
-    Point(float x, float y) : x(x), y(y) {}
 };
 
-void PopulatePointsTable(Point *points, const int n) {
+void PopulatePointsTable(Point *points) {
     points[0].x = 62.0;
     points[0].y = 58.4;
 
@@ -113,8 +112,8 @@ int main(int argc, char **argv) {
     iss >> permutationLength;
 
     const int n = 20;
-    Point *points = new Point[n];
-    PopulatePointsTable(points, n);
+    auto *points = new Point[n];
+    PopulatePointsTable(points);
 
 #ifdef PRINT_COORDINATES_OF_HOLES
     for (int i = 0; i < n; i++)
@@ -123,17 +122,17 @@ int main(int argc, char **argv) {
 
     Permutations permutations(permutationLength);
 
-    float minimumScore = MAXFLOAT;
+    double minimumScore = numeric_limits<double>::max();
     uint64_t *minimumPermutation = nullptr;
 
     auto start = high_resolution_clock::now();
 
     while (permutations.HasNext()) {
         const uint64_t *current = permutations.GetCurrent();
-        float currentScore = CalculateScore(points, current, permutationLength);
+        double currentScore = CalculateScore(points, current, permutationLength);
 
         if (currentScore < minimumScore) {
-            if (minimumScore != MAXFLOAT)
+            if (minimumScore != numeric_limits<double>::max())
                 cout << "Previous minimum score was: " << setprecision(7) << minimumScore << endl;
 
             minimumScore = currentScore;
@@ -147,7 +146,7 @@ int main(int argc, char **argv) {
 
     auto end = high_resolution_clock::now();
 
-    if (minimumScore != MAXFLOAT && minimumPermutation != nullptr) {
+    if (minimumScore != numeric_limits<double>::max() && minimumPermutation != nullptr) {
         cout << "Path was found with a minimum score of " << minimumScore << endl;
 
         cout << "Path is: ";
