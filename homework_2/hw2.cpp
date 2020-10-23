@@ -1,9 +1,11 @@
+#include <chrono>
 #include <cmath>
 #include <iostream>
 
 #include "permutations.h"
 
 using namespace std;
+using namespace std::chrono;
 
 struct Point {
     float x;
@@ -78,7 +80,7 @@ void PopulatePointsTable(Point *points, const int n) {
 
 // L2 - Euclidean norm
 inline double L2_Norm(Point *p1, Point *p2) {
-    throw runtime_error("Not yet implemented.");
+    return sqrt(pow(p1->x - p2->x, 2) + pow(p1->y - p2->y, 2));
 }
 
 double CalculateScore(Point *p, const uint64_t *permutation, int permutationLength) {
@@ -99,16 +101,19 @@ int main(int argc, char **argv) {
     Point *points = new Point[n];
     PopulatePointsTable(points, n);
 
-    /*// points printing - TEST purpose
+#ifdef PRINT_COORDINATES_OF_HOLES
     for (int i = 0; i < n; i++)
-        cout << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;*/
+        cout << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;
+#endif
 
-    uint64_t permutationLength;
+    uint64_t permutationLength = 11;
 
-    Permutations permutations(1, permutationLength);
+    Permutations permutations(permutationLength);
 
     float minimumScore = MAXFLOAT;
-    uint64_t minimumPermutation = 0;
+    uint64_t *minimumPermutation = nullptr;
+
+    auto start = high_resolution_clock::now();
 
     while (permutations.HasNext()) {
         const uint64_t *current = permutations.GetCurrent();
@@ -116,16 +121,33 @@ int main(int argc, char **argv) {
 
         if (currentScore < minimumScore) {
             minimumScore = currentScore;
-            minimumPermutation = current;
+            minimumPermutation = permutations.GetCurrentAsPtr(minimumPermutation);
         }
+
+        permutations.Next();
     }
 
-    if (minimumScore != MAXFLOAT) {
-        cout << "Path found with a minimum score of " << minimumScore << endl;
-        cout << "Path is: " << minimumPermutation << endl;
+    auto end = high_resolution_clock::now();
+
+    if (minimumScore != MAXFLOAT && minimumPermutation != nullptr) {
+        cout << "Path was found with a minimum score of " << minimumScore << endl;
+
+        cout << "Path is: ";
+        for (int i = 0; i < permutationLength; i++) {
+            cout << minimumPermutation[i] + 1;
+            if (i != permutationLength - 1)
+                cout << "-";
+            else
+                cout << endl;
+        }
+
+        auto duration = duration_cast<milliseconds>(end - start);
+        cout << "Time needed for the computation: " << duration.count() << " ms";
     } else {
         cout << "Finding path failed.";
     }
 
+    if (minimumPermutation != nullptr)
+        delete[] minimumPermutation;
     delete[] points;
 }
