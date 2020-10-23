@@ -1,4 +1,8 @@
+#include <cmath>
 #include <iostream>
+
+#include "permutations.h"
+
 using namespace std;
 
 struct Point {
@@ -6,10 +10,11 @@ struct Point {
     float y;
 
     Point() : x(0), y(0) {}
+
     Point(float x, float y) : x(x), y(y) {}
 };
 
-void PopulatePointsTable(Point* points, const int n) {
+void PopulatePointsTable(Point *points, const int n) {
     points[0].x = 62.0;
     points[0].y = 58.4;
 
@@ -71,14 +76,56 @@ void PopulatePointsTable(Point* points, const int n) {
     points[19].y = 33.1;
 }
 
+// L2 - Euclidean norm
+inline double L2_Norm(Point *p1, Point *p2) {
+    throw runtime_error("Not yet implemented.");
+}
+
+double CalculateScore(Point *p, const uint64_t *permutation, int permutationLength) {
+    double score = 0;
+
+    for (uint64_t i = 0; i < permutationLength - 1; i++) {
+        Point *start = &p[permutation[i]];
+        Point *end = &p[permutation[i + 1]];
+
+        score += L2_Norm(start, end);
+    }
+
+    return score;
+}
+
 int main(int argc, char **argv) {
     const int n = 20;
-    Point* points = new Point[n];
+    Point *points = new Point[n];
     PopulatePointsTable(points, n);
 
     /*// points printing - TEST purpose
     for (int i = 0; i < n; i++)
         cout << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;*/
+
+    uint64_t permutationLength;
+
+    Permutations permutations(1, permutationLength);
+
+    float minimumScore = MAXFLOAT;
+    uint64_t minimumPermutation = 0;
+
+    while (permutations.HasNext()) {
+        const uint64_t *current = permutations.GetCurrent();
+        float currentScore = CalculateScore(points, current, permutationLength);
+
+        if (currentScore < minimumScore) {
+            minimumScore = currentScore;
+            minimumPermutation = current;
+        }
+    }
+
+    if (minimumScore != MAXFLOAT) {
+        cout << "Path found with a minimum score of " << minimumScore << endl;
+        cout << "Path is: " << minimumPermutation << endl;
+    } else {
+        cout << "Finding path failed.";
+    }
 
     delete[] points;
 }
