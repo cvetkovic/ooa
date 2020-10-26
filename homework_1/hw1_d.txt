@@ -4,7 +4,7 @@
 (2) T =     280 ms, n =     357 911 000 (OpenMP)
           1 484 ms, n =     357 911 000 (without OpenMP)
 
-(3)
+(3) T =      28 ms, n =       8 741 816 (no parallelization)
 
-(4) najbrzi:  (3)
-    najlaksi: (1)
+(4) most efficient:     (3)
+    easiest to program: (1)

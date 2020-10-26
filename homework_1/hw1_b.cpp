@@ -9,12 +9,11 @@ int main(int argc, char **argv) {
     const uint64_t totalCost = 711;
     const uint64_t increment = 1;
 
-    uint64_t solutionCount = 0;
     uint64_t numberOfCalls = 0;
 
     auto start = high_resolution_clock::now();
 
-#pragma omp parallel for collapse(3) reduction(+: solutionCount, numberOfCalls)
+#pragma omp parallel for collapse(3) reduction(+: numberOfCalls)
     for (int a = 1; a < totalCost; a += increment) {
         for (int b = 1; b < totalCost; b += increment) {
             for (int c = 1; c < totalCost; c += increment) {
@@ -26,12 +25,11 @@ int main(int argc, char **argv) {
                     uint64_t r2 = (a * b * c * d1 / 1000000);
 
                     if (r1 == r2) {
-                        solutionCount++;
                         cout << "Solution found (a, b, c, d) = (" <<
-                             setprecision(2) << (double) a / 100 << ", " <<
-                             setprecision(2) << (double) b / 100 << ", " <<
-                             setprecision(2) << (double) c / 100 << ", " <<
-                             setprecision(2) << (double) d1 / 100 << ")" << endl;
+                             setprecision(3) << (double) a / 100 << ", " <<
+                             setprecision(3) << (double) b / 100 << ", " <<
+                             setprecision(3) << (double) c / 100 << ", " <<
+                             setprecision(3) << (double) d1 / 100 << ")" << endl;
                     }
                 }
 
