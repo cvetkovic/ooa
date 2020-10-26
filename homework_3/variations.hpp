@@ -5,6 +5,9 @@
 #ifndef HOMEWORK_3_VARIATIONS_H
 #define HOMEWORK_3_VARIATIONS_H
 
+#include <cstdint>
+using namespace std;
+
 class VariationGenerator {
 
 private:

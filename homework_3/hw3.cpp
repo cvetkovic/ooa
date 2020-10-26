@@ -2,6 +2,9 @@
 // Created by jugos000 on 26-Oct-20.
 //
 
+#ifndef HOMEWORK_3_H
+#define HOMEWORK_3_H
+
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -72,18 +75,21 @@ vector<SpanningTreeEdge> *VariationToSpanningTree(vector<uint64_t> &pVector, vec
 
 int main(int argc, char **argv) {
     // delete later
-    const int n = 6;
+    const int n = 2;
     const int k = n - 2;
 
     VariationGenerator generator(n, k);
-    uint64_t *resultVector = new uint64_t(k);
+    uint64_t *resultVector = new uint64_t[k];
 
     vector<SpanningTreeEdge> *minimumEdges = nullptr;
     uint64_t minimumScore = numeric_limits<uint64_t>::max();
 
     auto start = high_resolution_clock::now();
 
+    uint64_t iteration = 0;
+
     while (generator.HasNext()) {
+        iteration++;
         generator.NextVariation(resultVector);
         vector<uint64_t> pVector, vVector;
         unordered_map<uint64_t, uint64_t> gVector;
@@ -113,10 +119,15 @@ int main(int argc, char **argv) {
             if (minimumEdges != nullptr)
                 delete minimumEdges;
 
+            cout << "Found smaller score of: " << cost << endl;
+
             minimumScore = cost;
             minimumEdges = edges;
         } else
             delete edges;
+
+        if (iteration % 1000000 == 0)
+            cout << iteration << endl;
     }
 
     auto end = high_resolution_clock::now();
@@ -130,7 +141,7 @@ int main(int argc, char **argv) {
         auto duration = duration_cast<milliseconds>(end - start);
         cout << "Time needed for the computation: " << duration.count() << " ms";
     } else {
-        cout << "Finding path failed.";
+        cout << "Finding minimum spanning tree failed.";
     }
 
     delete minimumEdges;
@@ -138,3 +149,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+#endif //HOMEWORK_3_H
