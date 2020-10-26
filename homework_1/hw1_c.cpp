@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
     vector<double> factors;
 
-    uint64_t upperSearchLimit = (uint64_t) (sqrt(totalCost) + 1);
+    auto upperSearchLimit = (uint64_t) (sqrt(totalCost) + 1);
     for (uint64_t i = 2; i < upperSearchLimit; i++) {
         if (totalCost % i == 0) {
             double t1 = (double) i / (double) totalCost / 100;
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    double epsilon = 0.00000001;
+    const double epsilon = 0.00000001;
 
     for (uint64_t i = 0; i < factors.size(); i++) {
         for (uint64_t j = 0; j < factors.size(); j++) {
