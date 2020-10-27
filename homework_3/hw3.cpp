@@ -46,9 +46,9 @@ inline uint64_t CostFunction(vector<SpanningTreeEdge> &edges, unordered_map<uint
 
 /**
  *
- * @param pVector
- * @param pLength
+ * @param pVector Vector 0..p-2
  * @param vVector Sorted vector of all vertices indexes
+ * @param gVector Vertex arity
  * @return
  */
 vector<SpanningTreeEdge> *VariationToSpanningTree(vector<uint64_t> &pVector, vector<uint64_t> &vVector,
@@ -58,7 +58,8 @@ vector<SpanningTreeEdge> *VariationToSpanningTree(vector<uint64_t> &pVector, vec
     while (!pVector.empty()) {
         for (uint64_t i = 0; i < vVector.size(); i++) {
             if (find(pVector.begin(), pVector.end(), vVector[i]) == pVector.end()) {
-                edges->push_back(SpanningTreeEdge(pVector[0], vVector[i]));
+                edges->push_back(SpanningTreeEdge(vVector[i], pVector[0]));
+                gVector[vVector[i]]++;
                 gVector[pVector[0]]++;
                 pVector.erase(pVector.begin());
                 vVector.erase(vVector.begin() + i);
@@ -74,8 +75,7 @@ vector<SpanningTreeEdge> *VariationToSpanningTree(vector<uint64_t> &pVector, vec
 }
 
 int main(int argc, char **argv) {
-    // delete later
-    const int n = 2;
+    const int n = 10;
     const int k = n - 2;
 
     VariationGenerator generator(n, k);
@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < edges->size(); i++)
             cout << edges->operator[](i) << ", ";
         cout << endl;
-        for (int i = 0 ; i < gVector.size(); i++)
+        for (int i = 0; i < gVector.size(); i++)
             cout << i + 1 << ": " << gVector[i] << endl;
         cout << endl;
 #endif
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
             if (minimumEdges != nullptr)
                 delete minimumEdges;
 
-            cout << "Found smaller score of: " << cost << endl;
+            cout << "Current minimum score is: " << cost << endl;
 
             minimumScore = cost;
             minimumEdges = edges;
@@ -131,6 +131,8 @@ int main(int argc, char **argv) {
     }
 
     auto end = high_resolution_clock::now();
+
+    cout << "-----------------------" << endl;
 
     if (minimumScore != numeric_limits<uint64_t>::max() && minimumEdges != nullptr) {
         cout << "Minimum spanning tree has a cost functions of " << minimumScore << endl;
