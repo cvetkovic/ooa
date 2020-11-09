@@ -9,7 +9,7 @@
 #define NR_END 1
 #define FREE_ARG char*
 #define TINY 1.0e-10    //A small number.
-#define NMAX 5000        //Maximum allowed number of function evaluations.
+#define NMAX 500000        //Maximum allowed number of function evaluations.
 #define GET_PSUM for(j=1;j<=ndim;j++) { for (sum=0.0,i=1;i<=mpts;i++) sum += p[i][j]; psum[j]=sum;}
 #define SWAP(a, b) {swap=(a);(a)=(b);(b)=swap;}
 
@@ -24,23 +24,23 @@ void nrerror(char error_text[])
     exit(1);
 }
 
-float *vector(long nl, long nh)
-/* allocate a float vector with subscript range v[nl..nh] */
+double *vector(long nl, long nh)
+/* allocate a double vector with subscript range v[nl..nh] */
 {
-    float *v;
+    double *v;
 
-    v = (float *) malloc((size_t) ((nh - nl + 1 + NR_END) * sizeof(float)));
+    v = (double *) malloc((size_t) ((nh - nl + 1 + NR_END) * sizeof(double)));
     if (!v) nrerror("allocation failure in vector()");
     return v - nl + NR_END;
 }
 
-void free_vector(float *v, long nl, long nh)
-/* free a float vector allocated with vector() */
+void free_vector(double *v, long nl, long nh)
+/* free a double vector allocated with vector() */
 {
     free((FREE_ARG) (v + nl - NR_END));
 }
 
-void NMsimplex(float **p, float y[], int ndim, float ftol, float(*funk)(float[]), int *nfunk)
+void NMsimplex(double E, double **p, double y[], int ndim, double ftol, double(*funk)(double, double[]), int *nfunk)
 /* Multidimensional minimization of the function funk(x)
    where x[1..ndim] is a vector in ndim dimensions,
    by the downhill simplex method of Nelder and Mead.
@@ -55,9 +55,10 @@ void NMsimplex(float **p, float y[], int ndim, float ftol, float(*funk)(float[])
    all within ftol of a minimum function value,
    and nfunk gives the number of function evaluations taken. */
 {
-    float amotry(float **p, float y[], float psum[], int ndim, float(*funk)(float[]), int ihi, float fac);
+    double
+    amotry(double E, double **p, double y[], double psum[], int ndim, double(*funk)(double, double[]), int ihi, double fac);
     int i, ihi, ilo, inhi, j, mpts = ndim + 1;
-    float rtol, sum, swap, ysave, ytry, *psum;
+    double rtol, sum, swap, ysave, ytry, *psum;
 
     psum = vector(1, ndim);
     *nfunk = 0;
@@ -71,10 +72,9 @@ void NMsimplex(float **p, float y[], int ndim, float ftol, float(*funk)(float[])
             if (y[i] > y[ihi]) {
                 inhi = ihi;
                 ihi = i;
-            }
-            else if (y[i] > y[inhi] && i != ihi) inhi = i;
+            } else if (y[i] > y[inhi] && i != ihi) inhi = i;
         }
-        rtol = (float) (2.0 * fabs(y[ihi] - y[ilo]) / (fabs(y[ihi]) + fabs(y[ilo]) + TINY));
+        rtol = (double) (2.0 * fabs(y[ihi] - y[ilo]) / (fabs(y[ihi]) + fabs(y[ilo]) + TINY));
         //Compute the fractional range from highest to lowest and return if satisfactory.
         if (rtol < ftol) {
             //If returning, put best point and value in slot 1.
@@ -82,24 +82,27 @@ void NMsimplex(float **p, float y[], int ndim, float ftol, float(*funk)(float[])
             for (i = 1; i <= ndim; i++) SWAP(p[1][i], p[ilo][i])
             break;
         }
-        if (*nfunk >= NMAX) nrerror("NMAX exceeded");
+        if (*nfunk >= NMAX) {
+            printf("%d", *nfunk);
+            nrerror("NMAX exceeded");
+        }
         *nfunk += 2;
         //Begin a new iteration.First extrapolate by a factor −1 through the face of the simplex across from the high point, i.e., reﬂect the simplex from the high point.
-        ytry = amotry(p, y, psum, ndim, funk, ihi, -1.0);
+        ytry = amotry(E, p, y, psum, ndim, funk, ihi, -1.0);
         if (ytry <= y[ilo])
             //Gives a result better than the best point, so try an additional extrapolation by a factor 2.
-            ytry = amotry(p, y, psum, ndim, funk, ihi, 2.0);
+            ytry = amotry(E, p, y, psum, ndim, funk, ihi, 2.0);
         else if (ytry >= y[inhi]) {
             //The reﬂected point is worse than the second - highest, so look for an intermediate lower point, i.e., do a one - dimensional contraction.
             ysave = y[ihi];
-            ytry = amotry(p, y, psum, ndim, funk, ihi, 0.5);
+            ytry = amotry(E, p, y, psum, ndim, funk, ihi, 0.5);
             if (ytry >= ysave) {
                 //Can’t seem to get rid of that high point.Better contract around the lowest(best) point.
                 for (i = 1; i <= mpts; i++) {
                     if (i != ilo) {
                         for (j = 1; j <= ndim; j++)
-                            p[i][j] = psum[j] = (float) (0.5 * (p[i][j] + p[ilo][j]));
-                        y[i] = (*funk)(psum);
+                            p[i][j] = psum[j] = (double) (0.5 * (p[i][j] + p[ilo][j]));
+                        y[i] = (*funk)(E, psum);
                     }
                 }
                 *nfunk += ndim; //Keep track of function evaluations.
@@ -110,17 +113,17 @@ void NMsimplex(float **p, float y[], int ndim, float ftol, float(*funk)(float[])
     free_vector(psum, 1, ndim);
 }
 
-float amotry(float **p, float y[], float psum[], int ndim, float(*funk)(float[]), int ihi, float fac)
+double amotry(double E, double **p, double y[], double psum[], int ndim, double(*funk)(double, double[]), int ihi, double fac)
 //Extrapolates by a factor fac through the face of the simplex across from the high point, tries it, and replaces the high point if the new point is better.
 {
     int j;
-    float fac1, fac2, ytry, *ptry;
+    double fac1, fac2, ytry, *ptry;
     ptry = vector(1, ndim);
-    fac1 = (float) ((1.0 - fac) / ndim);
+    fac1 = (double) ((1.0 - fac) / ndim);
     fac2 = fac1 - fac;
     for (j = 1; j <= ndim; j++)
         ptry[j] = psum[j] * fac1 - p[ihi][j] * fac2;
-    ytry = (*funk)(ptry); //Evaluate the function at the trial point.
+    ytry = (*funk)(E, ptry); //Evaluate the function at the trial point.
 
     if (ytry < y[ihi]) {
         //If it’s better than the highest, then replace the highest.
@@ -135,10 +138,10 @@ float amotry(float **p, float y[], float psum[], int ndim, float(*funk)(float[])
 }
 
 // optimization function
-float f(float x[]) {
-    float res = 1.0;
+double f(double x[]) {
+    double res = 1.0;
     for (int i = 1; i < N + 1; i++)
-        res += (float) pow(x[i] + 2.1, 2.0);
+        res += (double) pow(x[i] + 2.1, 2.0);
     return res;
 }
 
@@ -146,11 +149,11 @@ float f(float x[]) {
 int main()
 {
     // memory allocation
-    float **p = new float* [N+2];
+    double **p = new double* [N+2];
     for (int i = 0; i < N+2; i++)
-        p[i] = new float[N+1];
-    float *y = new float [N+2];
-    float ftol = (float)1e-5;
+        p[i] = new double[N+1];
+    double *y = new double [N+2];
+    double ftol = (double)1e-5;
     int nfunk;
 
     // initial simplex
