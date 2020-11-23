@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     long la_upper = la + interval;
     long lb_upper = lb + interval;
 
-    long lcost = numeric_limits<long>().min();
+    long lcost = numeric_limits<long>.min();
 
     for (long i = la - interval; i < la_upper; i++) {
         for (long j = lb - interval; j < lb_upper; j++) {
