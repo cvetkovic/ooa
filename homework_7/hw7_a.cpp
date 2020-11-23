@@ -3,7 +3,6 @@
 //
 
 #include <cmath>
-#include <cstdint>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -77,12 +76,16 @@ inline void copyVector(bool *src, bool *dst, const size_t vectorSize) {
 
 int main(int argc, char **argv) {
     std::vector<double> vectorMinimums;
-    std::ofstream averages("average.txt");
-    std::ofstream minimums("minimum.txt");
 
+#pragma omp parallel for
     for (int x = 0; x < 20; x++) {
         int64_t iteration = 0;
         int64_t fMin = std::numeric_limits<int64_t>::max();
+
+        std::ofstream averages("average_" + std::to_string(x + 1) + ".txt");
+        std::ofstream minimums("minimum_" + std::to_string(x + 1) + ".txt");
+
+        int64_t currentSum = 0;
 
         constexpr int64_t initialTemperature = 32 * 1024 * 1024;
         bool vector[D];
@@ -131,6 +134,12 @@ int main(int argc, char **argv) {
             }
 
             iteration++;
+
+            currentSum += newCost;
+            double t = ((double) costFunction(minimum)) / (1024 * 1024);
+            double t2 = ((double) currentSum / (iteration + 1)) / (1024 * 1024);
+            minimums << t << std::endl;
+            averages << t2 << std::endl;
         }
 
         double unoccupiedSize = ((double) costFunction(minimum)) / (1024 * 1024);
@@ -139,15 +148,19 @@ int main(int argc, char **argv) {
         std::cout << "Unoccupied size: " << unoccupiedSize << " MB" << std::endl;
         std::cout << "-----------------------------" << std::endl;
 
+#pragma omp atomic
         vectorMinimums.push_back(unoccupiedSize);
 
-        minimums << unoccupiedSize << std::endl;
+        /*minimums << unoccupiedSize << std::endl;
         double avg = 0;
         for (int i = 0; i < vectorMinimums.size(); i++) {
             avg += vectorMinimums[i];
         }
         avg /= vectorMinimums.size();
-        averages << avg << std::endl;
+        averages << avg << std::endl;*/
+
+        averages.close();
+        minimums.close();
     }
 
     double avg = 0;
@@ -161,9 +174,6 @@ int main(int argc, char **argv) {
 
     std::cout << "Average unoccupied size: " << avg << " MB" << std::endl;
     std::cout << "Cumulative unoccupied size minimum: " << cumulative_minimum << " MB" << std::endl;
-
-    averages.close();
-    minimums.close();
 
     return 0;
 }
