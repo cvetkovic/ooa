@@ -82,7 +82,6 @@ int main(int argc, char **argv) {
         int64_t iteration = 0;
         int64_t fMin = std::numeric_limits<int64_t>::max();
 
-        std::ofstream averages("average_" + std::to_string(x + 1) + ".txt");
         std::ofstream minimums("minimum_" + std::to_string(x + 1) + ".txt");
 
         int64_t currentSum = 0;
@@ -137,15 +136,14 @@ int main(int argc, char **argv) {
 
             currentSum += newCost;
             double t = ((double) costFunction(minimum)) / (1024 * 1024);
-            double t2 = ((double) currentSum / (iteration + 1)) / (1024 * 1024);
             minimums << t << std::endl;
-            averages << t2 << std::endl;
         }
 
-        double unoccupiedSize = ((double) costFunction(minimum)) / (1024 * 1024);
+        double unoccupiedSize = ((double) fMin) / (1024 * 1024);
         double occupiedSize = ((double) maxSize / (1024 * 1024)) - unoccupiedSize; // MB
         std::cout << "Occupied size: " << occupiedSize << " MB" << std::endl;
         std::cout << "Unoccupied size: " << unoccupiedSize << " MB" << std::endl;
+        printVector(minimum, D);
         std::cout << "-----------------------------" << std::endl;
 
 #pragma omp atomic
@@ -159,7 +157,6 @@ int main(int argc, char **argv) {
         avg /= vectorMinimums.size();
         averages << avg << std::endl;*/
 
-        averages.close();
         minimums.close();
     }
 
