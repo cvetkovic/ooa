@@ -5,17 +5,17 @@
 #include "shapes.hpp"
 
 void Rectangle::rotateLeft() {
-
+    swap(width, height);
 }
 
 void Rectangle::rotateRight() {
-
+    swap(width, height);
 }
 
 void Rectangle::flipHorizontally() {
-
+    throw runtime_error("Not yet implemented.");
 }
 
 void Rectangle::flipVertically() {
-
+    throw runtime_error("Not yet implemented.");
 }

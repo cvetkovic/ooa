@@ -5,6 +5,7 @@
 #ifndef IOA_RECTANGLE_HPP
 #define IOA_RECTANGLE_HPP
 
+#include <algorithm>
 #include <iostream>
 
 using namespace std;
@@ -40,6 +41,8 @@ public:
 
     virtual void flipVertically() = 0;
 
+    virtual int calculateArea() = 0;
+
     Point &getUpperLeft() {
         return upperLeft;
     }
@@ -67,6 +70,8 @@ public:
     int getWidth() const { return width; }
 
     int getHeight() const { return height; }
+
+    int calculateArea() override { return width * height; }
 
     friend ostream &operator<<(ostream &os, const Rectangle &rectangle) {
         os << rectangle.upperLeft << " " << rectangle.width << " " << rectangle.height;

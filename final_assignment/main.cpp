@@ -26,12 +26,24 @@ vector<Rectangle> *createShapes() {
     return rectangles;
 }
 
+inline int optimizationFunction(vector<Rectangle> &shapes, int canvasArea) {
+    int result = canvasArea;
+
+    for (auto &rectangle : shapes)
+        result -= rectangle.calculateArea();
+
+    return result;
+}
+
 void optimize(const vector<Rectangle> &shapes) {
 
 }
 
-void writeToFile(const vector<Rectangle> &shapes) {
+void writeToFile(const vector<Rectangle> &shapes, int canvasSizeX, int canvasSizeY) {
     ofstream file("fa_layout.txt");
+
+    file << canvasSizeX << endl;
+    file << canvasSizeY << endl;
 
     for (const Rectangle &rectangle : shapes)
         file << rectangle << endl;
@@ -42,7 +54,7 @@ void writeToFile(const vector<Rectangle> &shapes) {
 int main(int argc, char **argv) {
     vector<Rectangle> *rectangles = createShapes();
 
-    writeToFile(*rectangles);
+    writeToFile(*rectangles, 800, 600);
 
     delete rectangles;
 
