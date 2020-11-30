@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from PIL import Image, ImageDraw
 from random import randint
-from random import seed
 
 @dataclass
 class Rectangle:
@@ -39,6 +38,6 @@ for r in rectangles:
     g = randint(40, 255)
     b = randint(40, 255)
 
-    draw.rectangle((upperLeftX, upperLeftY, lowerRightX, lowerRightY), fill=(r, g, b), outline=(255, 255, 255))
+    draw.rectangle((upperLeftX, upperLeftY, lowerRightX, lowerRightY), fill=(r, g, b))
 
 image.save('/mnt/c/Users/jugos000/Desktop/test.png', quality=95)
