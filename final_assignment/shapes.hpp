@@ -49,9 +49,13 @@ public:
 
     int calculateArea() { return width * height; }
 
+    Point getTopLeft() const;
+
     Point getTopRight() const;
 
-    Point getBottomLeft() { return bottomLeft; }
+    Point getBottomLeft() const { return bottomLeft; }
+
+    Point getBottomRight() const;
 
     friend ostream &operator<<(ostream &os, const Rectangle &rectangle) {
         os << rectangle.bottomLeft << " " << rectangle.width << " " << rectangle.height;
@@ -101,6 +105,15 @@ public:
     Solution(const int N) : N(N) {
         rectangles = new Rectangle[N];
         generateRandomLayout();
+    }
+
+    Solution(const Solution &copyFrom) : N(copyFrom.N) {
+        rectangles = new Rectangle[N];
+        for (int i = 0; i < N; i++)
+            rectangles[i] = copyFrom.rectangles[i];
+
+        this->canvasSizeX = copyFrom.canvasSizeX;
+        this->canvasSizeY = copyFrom.canvasSizeY;
     }
 
     ~Solution() { delete rectangles; }

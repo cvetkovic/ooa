@@ -4,8 +4,16 @@
 
 #include "shapes.hpp"
 
+Point Rectangle::getTopLeft() const {
+    return Point(bottomLeft.x, bottomLeft.y - height);
+}
+
 Point Rectangle::getTopRight() const {
     return Point(bottomLeft.x + width, bottomLeft.y - height);
+}
+
+Point Rectangle::getBottomRight() const {
+    return Point(bottomLeft.x + width, bottomLeft.y);
 }
 
 bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {

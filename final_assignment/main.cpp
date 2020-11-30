@@ -2,6 +2,8 @@
 // Created by jugos000 on 26-Nov-20.
 //
 
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -15,13 +17,56 @@ constexpr uint64_t maximumIterations = 100;
 
 // 1 + 2 + ... 23 = 276
 
-inline int optimizationFunction(const Solution &solution) {
-    int result = canvasArea;
+inline double euclideanDistance(const Point &p1, const Point &p2) {
+    return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+}
 
-    for (auto &rectangle : shapes)
-        result -= rectangle.calculateArea();
+inline double minimumDistanceBetweenVertices(const Rectangle &r1, const Rectangle &r2) {
+    vector<Point> pointsA, pointsB;
 
-    return result;
+    pointsA.push_back(r1.getTopLeft());
+    pointsA.push_back(r1.getTopRight());
+    pointsA.push_back(r1.getBottomLeft());
+    pointsA.push_back(r1.getBottomRight());
+
+    pointsB.push_back(r2.getTopLeft());
+    pointsB.push_back(r2.getTopRight());
+    pointsB.push_back(r2.getBottomLeft());
+    pointsB.push_back(r2.getBottomRight());
+
+    double min = numeric_limits<double>::max();
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            double distance = euclideanDistance(pointsA[i], pointsB[j]);
+
+            if (distance < min)
+                min = distance;
+        }
+    }
+
+    return min;
+}
+
+inline double optimizationFunction(const Solution &solution) {
+    double score = 0;
+    bool visited[N][N];
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            if (i == j || visited[i][j] || visited[j][i])
+                continue;
+
+            const Rectangle &r1 = solution.getRectangles()[i];
+            const Rectangle &r2 = solution.getRectangles()[j];
+
+            score += minimumDistanceBetweenVertices(r1, r2);
+
+            visited[i][j] = visited[j][i] = true;
+        }
+    }
+
+    return score;
 }
 
 void writeToFile(const Solution &solution) {
@@ -51,10 +96,12 @@ int main(int argc, char **argv) {
     uint64_t iteration = 0;
 
     Solution current(N);
-    int64_t currentCost = optimizationFunction(current);
-    int64_t globalMin = currentCost;
+    double currentCost = optimizationFunction(current);
+    double globalMin = currentCost;
 
-    while (iteration++ < maximumIterations) {
+    cout << "Minimum score is: " << setprecision(10) << globalMin << endl;
+
+    /*while (iteration++ < maximumIterations) {
 
         int64_t newCost = optimizationFunction(current);
         int64_t dE = newCost - currentCost;
@@ -75,9 +122,9 @@ int main(int argc, char **argv) {
         if (currentCost < globalMin) {
             globalMin = currentCost;
         }
-    }
+    }*/
 
-    //writeToFile(initial);
+    writeToFile(current);
 
     return 0;
 }
