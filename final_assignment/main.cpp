@@ -12,19 +12,7 @@ using namespace std;
 
 constexpr int N = 23;
 
-vector<Rectangle> *createShapes() {
-    vector<Rectangle> *rectangles = new vector<Rectangle>();
-    Point initialPoint(0, 0);
-
-    for (int i = 1; i <= 23; i++) {
-        int width = i;
-        int height = 24 - i;
-
-        rectangles->push_back(Rectangle(initialPoint, width, height));
-    }
-
-    return rectangles;
-}
+// 1 + 2 + ... 23 = 276
 
 inline int optimizationFunction(vector<Rectangle> &shapes, int canvasArea) {
     int result = canvasArea;
@@ -35,28 +23,31 @@ inline int optimizationFunction(vector<Rectangle> &shapes, int canvasArea) {
     return result;
 }
 
-void optimize(const vector<Rectangle> &shapes) {
-
-}
-
-void writeToFile(const vector<Rectangle> &shapes, int canvasSizeX, int canvasSizeY) {
+void writeToFile(const Solution &solution) {
     ofstream file("fa_layout.txt");
 
-    file << canvasSizeX << endl;
-    file << canvasSizeY << endl;
+    file << solution.getCanvasSizeX() << endl;
+    file << solution.getCanvasSizeY() << endl;
 
-    for (const Rectangle &rectangle : shapes)
-        file << rectangle << endl;
+    for (int i = 0; i < N; i++)
+        file << solution.getRectangles()[i] << endl;
 
     file.close();
 }
 
 int main(int argc, char **argv) {
-    vector<Rectangle> *rectangles = createShapes();
 
-    writeToFile(*rectangles, 800, 600);
+#ifdef CLASS_TEST
+    Rectangle r(Point(10,10), 5, 6);
+    cout << "P = " << r.calculateArea() << endl;
+    cout << "Top right: " << r.getTopRight() << endl;
+    r.rotate();
+    cout << "Top right: " << r.getTopRight() << endl;
+#endif
 
-    delete rectangles;
+    Solution initial(N);
+
+    writeToFile(initial);
 
     return 0;
 }

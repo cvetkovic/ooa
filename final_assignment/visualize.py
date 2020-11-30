@@ -32,8 +32,8 @@ draw = ImageDraw.Draw(image)
 for r in rectangles:
     upperLeftX = r.pointX
     upperLeftY = r.pointY
-    lowerRightX = upperLeftX + r.width * 10
-    lowerRightY = upperLeftY + r.height * 10
+    lowerRightX = upperLeftX + r.width
+    lowerRightY = upperLeftY + r.height
 
     r = randint(40, 255)
     g = randint(40, 255)
