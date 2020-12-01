@@ -13,7 +13,7 @@
 using namespace std;
 
 constexpr int N = 23;
-constexpr uint64_t maximumIterations = 100;
+constexpr int maximumIterations = 100;
 
 // 1 + 2 + ... 23 = 276
 
@@ -105,15 +105,26 @@ int main(int argc, char **argv) {
     cout << Rectangle::overlap(r3, r4);          // should be 0
 #endif
 
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<double> dist(0, 1);
+
     constexpr double alpha = 0.95;
     int64_t T = 32 * 1024 * 1024;
-    uint64_t iteration = 0;
+    int iteration = 0;
 
     Solution current(N);
     double currentCost = optimizationFunction(current);
     double globalMin = currentCost;
+    Solution globalSolution(current);
 
-    /*while (iteration++ < maximumIterations) {
+    constexpr int hammingMax = 64;
+    constexpr int hammingMin = 1;
+
+    while (iteration < maximumIterations) {
+
+        int distance = (hammingMin - hammingMax) * iteration / (maximumIterations - 1) + hammingMax;
+        current.hamming(distance);
 
         int64_t newCost = optimizationFunction(current);
         int64_t dE = newCost - currentCost;
@@ -121,8 +132,7 @@ int main(int argc, char **argv) {
             currentCost = newCost;
         } else {
             double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
-            // TODO: port to C++11
-            double rnd = (double) (rand() / RAND_MAX);
+            double rnd = dist(mt);
 
             if (rnd < p) {
                 currentCost = newCost;
@@ -134,7 +144,9 @@ int main(int argc, char **argv) {
         if (currentCost < globalMin) {
             globalMin = currentCost;
         }
-    }*/
+
+        iteration++;
+    }
 
     writeToFile(current);
     cout << "Minimum score is: " << setprecision(10) << globalMin << endl;

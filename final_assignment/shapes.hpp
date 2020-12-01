@@ -9,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <unordered_map>
 
 using namespace std;
 
@@ -125,6 +126,8 @@ public:
     int getCanvasSizeX() const { return canvasSizeX; }
 
     int getCanvasSizeY() const { return canvasSizeY; }
+
+    void hamming(const int distance);
 
 };
 

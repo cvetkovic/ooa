@@ -26,6 +26,7 @@ bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {
 }
 
 // TODO: check for uniformity
+// TODO: make static inside function
 random_device Solution::rd;
 mt19937 Solution::mt(rd());
 uniform_int_distribution<int> Solution::dist(0, 60);
@@ -107,5 +108,28 @@ void Solution::generateRandomLayout() {
     for (int i = 0; i < N; i++) {
         rectangles[i].bottomLeft.x -= minX;
         rectangles[i].bottomLeft.y -= minY;
+    }
+}
+
+void Solution::hamming(const int distance) {
+    unordered_map<int, int> rectangleIndexMap;
+    int i = 0;
+
+    static uniform_int_distribution<int> dist(0, 22);
+
+    // determine which rectangles to change
+    while (i < distance) {
+        int num = dist(mt);
+
+        if (rectangleIndexMap[num] <= 5) {
+            rectangleIndexMap[num]++;
+            i++;
+        }
+    }
+
+    for (i = 0; i < N; i++) {
+        for (int j = 0; j < rectangleIndexMap[i]; j++) {
+            
+        }
     }
 }
