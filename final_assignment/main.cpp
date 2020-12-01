@@ -84,11 +84,25 @@ void writeToFile(const Solution &solution) {
 int main(int argc, char **argv) {
 
 #ifdef CLASS_TEST
+    ////////////////////////////
+    // test 1
+    ////////////////////////////
     Rectangle r(Point(10,10), 5, 6);
     cout << "P = " << r.calculateArea() << endl;
     cout << "Top right: " << r.getTopRight() << endl;
     r.rotate();
     cout << "Top right: " << r.getTopRight() << endl;
+
+    ////////////////////////////
+    // test 2
+    ////////////////////////////
+    Rectangle r1(Point(39, 18), 14, 10);
+    Rectangle r2(Point(51, 12), 22, 2);
+    cout << Rectangle::overlap(r1, r2) << endl; // should be 1
+
+    Rectangle r3(Point(5, 5), 1, 1);
+    Rectangle r4(Point(10, 10), 1, 1);
+    cout << Rectangle::overlap(r3, r4);          // should be 0
 #endif
 
     constexpr double alpha = 0.95;
