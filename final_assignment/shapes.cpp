@@ -28,7 +28,7 @@ bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {
 // TODO: check for uniformity
 random_device Solution::rd;
 mt19937 Solution::mt(rd());
-uniform_int_distribution<int> Solution::dist(0, 276);
+uniform_int_distribution<int> Solution::dist(0, 60);
 
 void Solution::generateRandomLayout() {
     // set width and height
@@ -60,8 +60,8 @@ void Solution::generateRandomLayout() {
             ////////////////////////////////
             bool exitLoop = true;
             for (int j = 0; j < i; j++) {
-                Rectangle &r1 = rectangles[j];
-                Rectangle &r2 = rectangles[i];
+                Rectangle &r1 = rectangles[i];
+                Rectangle &r2 = rectangles[j];
 
                 if (&r1 == &r2)
                     continue;
@@ -70,7 +70,7 @@ void Solution::generateRandomLayout() {
                     exitLoop = false;
             }
 
-            // continue if constraints not met
+            // continue if constraints are not met
             if (exitLoop)
                 break;
         }

@@ -47,7 +47,7 @@ public:
 
     int getHeight() const { return height; }
 
-    int calculateArea() { return width * height; }
+    int calculateArea() const { return width * height; }
 
     Point getTopLeft() const;
 
@@ -58,7 +58,9 @@ public:
     Point getBottomRight() const;
 
     friend ostream &operator<<(ostream &os, const Rectangle &rectangle) {
-        os << rectangle.bottomLeft << " " << rectangle.width << " " << rectangle.height;
+        Point upperLeft = rectangle.getTopLeft();
+
+        os << upperLeft << " " << rectangle.width << " " << rectangle.height;
 
         return os;
     }
@@ -68,7 +70,7 @@ public:
         const int yi1 = r1.bottomLeft.y;
         Point topRight1 = r1.getTopRight();
         const int xi2 = topRight1.x;
-        const int yi2 = topRight1.y;
+        const int yi2 = -topRight1.y;
 
         const int xj1 = r2.bottomLeft.x;
         const int yj1 = r2.bottomLeft.y;

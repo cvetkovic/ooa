@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from PIL import Image, ImageDraw
 from random import randint
 
+
 @dataclass
 class Rectangle:
     pointX: int
@@ -38,6 +39,8 @@ for r in rectangles:
     g = randint(40, 255)
     b = randint(40, 255)
 
-    draw.rectangle((upperLeftX, upperLeftY, lowerRightX, lowerRightY), fill=(r, g, b))
+    for i in range(upperLeftX, lowerRightX):
+        for j in range(upperLeftY, lowerRightY):
+            draw.point((i, j), fill=(r, g, b))
 
 image.save('/mnt/c/Users/jugos000/Desktop/test.png', quality=95)

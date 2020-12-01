@@ -99,8 +99,6 @@ int main(int argc, char **argv) {
     double currentCost = optimizationFunction(current);
     double globalMin = currentCost;
 
-    cout << "Minimum score is: " << setprecision(10) << globalMin << endl;
-
     /*while (iteration++ < maximumIterations) {
 
         int64_t newCost = optimizationFunction(current);
@@ -125,6 +123,7 @@ int main(int argc, char **argv) {
     }*/
 
     writeToFile(current);
+    cout << "Minimum score is: " << setprecision(10) << globalMin << endl;
 
     return 0;
 }
