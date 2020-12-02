@@ -104,7 +104,7 @@ protected:
     static uniform_int_distribution<int> dist;
 
     int canvasSizeX, canvasSizeY;
-    int finalScore = numeric_limits<int>::max();
+    double finalScore = numeric_limits<double>::max();
 
 public:
     Solution(const int N) : N(N) {
@@ -144,11 +144,11 @@ public:
         return to;
     }
 
-    int getFinalScore() const {
+    double getFinalScore() const {
         return finalScore;
     }
 
-    void setFinalScore(int score) {
+    void setFinalScore(double score) {
         finalScore = score;
     }
 

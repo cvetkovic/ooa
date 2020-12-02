@@ -109,14 +109,13 @@ int main(int argc, char **argv) {
     mt19937 mt(rd());
     uniform_real_distribution<double> dist(0, 1);
 
-    const int numberOfSolutions = 20;
+    const int numberOfSolutions = 25;
     Solution **solutions = new Solution *[numberOfSolutions];
 
 //#pragma omp parallel for
     for (int i = 0; i < numberOfSolutions; i++) {
         try {
-            constexpr double alpha = 0.95;
-            int64_t T = 32 * 1024 * 1024;
+            double T_0 = 32 * 1024 * 1024;
             int iteration = 0;
 
             Solution current(N);
@@ -127,10 +126,14 @@ int main(int argc, char **argv) {
 
             Solution globalSolution(current);
 
-            constexpr int hammingMax = 32;
+            constexpr int hammingMax = 24;
             constexpr int hammingMin = 1;
-
-            while (iteration < maximumIterations) {
+#ifdef LOGARITMIC_COOLING_SCHEDULE
+            double T = T_0 / log(2);
+#else
+            double T = T_0;
+#endif
+            while (iteration < maximumIterations && T > 0.1) {
                 int distance = (hammingMin - hammingMax) * iteration / (maximumIterations - 1) + hammingMax;
                 Solution tmp(current);
                 tmp.hamming(distance);
@@ -138,9 +141,10 @@ int main(int argc, char **argv) {
                 int64_t newCost = optimizationFunction(tmp);
                 int64_t dE = newCost - currentCost;
                 if (dE < 0) {
-                    current = tmp;
-                    currentCost = newCost;
+                    globalSolution = current = tmp;
+                    globalMin = currentCost = newCost;
                     current.setFinalScore(currentCost);
+                    globalSolution.setFinalScore(globalMin);
                 } else {
                     double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
                     double rnd = dist(mt);
@@ -152,15 +156,14 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                T *= alpha;
-
-                if (currentCost < globalMin) {
-                    globalMin = currentCost;
-                    globalSolution = current;
-                    globalSolution.setFinalScore(globalMin);
-                }
-
                 iteration++;
+
+#ifdef LOGARITMIC_COOLING_SCHEDULE
+                T = T_0 / log(iteration + 1);
+#else
+                constexpr double alpha = 0.95;
+                T *= alpha;
+#endif
             }
 
             solutions[i] = new Solution(globalSolution);

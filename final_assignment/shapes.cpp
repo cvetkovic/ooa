@@ -25,11 +25,9 @@ bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {
         return false;
 }
 
-// TODO: check for uniformity
-// TODO: make static inside function
 random_device Solution::rd;
 mt19937 Solution::mt(rd());
-uniform_int_distribution<int> Solution::dist(0, 55);
+uniform_int_distribution<int> Solution::dist(0, 60);
 
 void Solution::generateRandomLayout() {
     // set width and height
@@ -139,7 +137,7 @@ void Solution::hamming(const int distance) {
 
         while (cnt > 0) {
             // generate position of random bit to flip
-            if (dist(mt) % 2 == 0) {
+            if (dist(mt) % 2 != 0) {
                 int position;
                 int numberOfTries = 0;
                 do {
