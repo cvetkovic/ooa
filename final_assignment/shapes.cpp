@@ -74,7 +74,7 @@ void Solution::generateRandomLayout() {
             }
 
             if (++numberOfTries > MAX_NUMBER_OF_RANDOM_GUESSES)
-                throw runtime_exception;
+                throw runtime_error("Exceeded maximum number of randomisation.");
 
             // continue if constraints are not met
             if (exitLoop)
@@ -147,7 +147,7 @@ void Solution::hamming(const int distance) {
                     if (bits.find(position) == bits.end())
                         break;
                     if (++numberOfTries > MAX_NUMBER_OF_RANDOM_GUESSES)
-                        throw runtime_exception;
+                        throw runtime_error("Exceeded maximum number of randomisation.");
                 } while (true);
 
                 // flip the bit

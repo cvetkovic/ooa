@@ -114,56 +114,61 @@ int main(int argc, char **argv) {
 
 //#pragma omp parallel for
     for (int i = 0; i < numberOfSolutions; i++) {
-        constexpr double alpha = 0.95;
-        int64_t T = 32 * 1024 * 1024;
-        int iteration = 0;
+        try {
+            constexpr double alpha = 0.95;
+            int64_t T = 32 * 1024 * 1024;
+            int iteration = 0;
 
-        Solution current(N);
-        current.generateRandomLayout();
+            Solution current(N);
+            current.generateRandomLayout();
 
-        double currentCost = optimizationFunction(current);
-        double globalMin = currentCost;
+            double currentCost = optimizationFunction(current);
+            double globalMin = currentCost;
 
-        Solution globalSolution(current);
+            Solution globalSolution(current);
 
-        constexpr int hammingMax = 32;
-        constexpr int hammingMin = 1;
+            constexpr int hammingMax = 32;
+            constexpr int hammingMin = 1;
 
-        while (iteration < maximumIterations) {
-            int distance = (hammingMin - hammingMax) * iteration / (maximumIterations - 1) + hammingMax;
-            Solution tmp(current);
-            tmp.hamming(distance);
+            while (iteration < maximumIterations) {
+                int distance = (hammingMin - hammingMax) * iteration / (maximumIterations - 1) + hammingMax;
+                Solution tmp(current);
+                tmp.hamming(distance);
 
-            int64_t newCost = optimizationFunction(tmp);
-            int64_t dE = newCost - currentCost;
-            if (dE < 0) {
-                current = tmp;
-                currentCost = newCost;
-                current.setFinalScore(currentCost);
-            } else {
-                double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
-                double rnd = dist(mt);
-
-                if (rnd < p) {
+                int64_t newCost = optimizationFunction(tmp);
+                int64_t dE = newCost - currentCost;
+                if (dE < 0) {
                     current = tmp;
                     currentCost = newCost;
                     current.setFinalScore(currentCost);
+                } else {
+                    double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
+                    double rnd = dist(mt);
+
+                    if (rnd < p) {
+                        current = tmp;
+                        currentCost = newCost;
+                        current.setFinalScore(currentCost);
+                    }
                 }
+
+                T *= alpha;
+
+                if (currentCost < globalMin) {
+                    globalMin = currentCost;
+                    globalSolution = current;
+                    globalSolution.setFinalScore(globalMin);
+                }
+
+                iteration++;
             }
 
-            T *= alpha;
-
-            if (currentCost < globalMin) {
-                globalMin = currentCost;
-                globalSolution = current;
-                globalSolution.setFinalScore(globalMin);
-            }
-
-            iteration++;
+            solutions[i] = new Solution(globalSolution);
+            cout << "Iteration " << i << " with a minimum score of " << globalMin << "." << endl;
         }
-
-        solutions[i] = new Solution(globalSolution);
-        cout << "Iteration " << i << " with a minimum score of " << globalMin << "." << endl;
+        catch (const runtime_error &error) {
+            cout << "Iteration " << i << " failed because maximum number of randomization was exceeded." << endl;
+        }
     }
 
     int cumulativeMinimum = numeric_limits<int>::max();
