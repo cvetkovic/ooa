@@ -14,6 +14,8 @@
 
 using namespace std;
 
+constexpr int MAX_NUMBER_OF_RANDOM_GUESSES = 1000;
+
 struct Point {
     int x;
     int y;
@@ -102,6 +104,7 @@ protected:
     static uniform_int_distribution<int> dist;
 
     int canvasSizeX, canvasSizeY;
+    int finalScore = numeric_limits<int>::max();
 
 public:
     Solution(const int N) : N(N) {
@@ -115,6 +118,7 @@ public:
 
         this->canvasSizeX = copyFrom.canvasSizeX;
         this->canvasSizeY = copyFrom.canvasSizeY;
+        this->finalScore = copyFrom.finalScore;
     }
 
     ~Solution() { delete[] rectangles; }
@@ -133,8 +137,19 @@ public:
         Solution to(from.N);
         for (int i = 0; i < from.N; i++)
             to.rectangles[i] = from.rectangles[i];
+        to.finalScore = from.finalScore;
+        to.canvasSizeX = from.canvasSizeX;
+        to.canvasSizeY = from.canvasSizeY;
 
         return to;
+    }
+
+    int getFinalScore() const {
+        return finalScore;
+    }
+
+    void setFinalScore(int score) {
+        finalScore = score;
     }
 
 };

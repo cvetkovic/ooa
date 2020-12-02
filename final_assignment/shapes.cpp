@@ -29,7 +29,7 @@ bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {
 // TODO: make static inside function
 random_device Solution::rd;
 mt19937 Solution::mt(rd());
-uniform_int_distribution<int> Solution::dist(0, 60);
+uniform_int_distribution<int> Solution::dist(0, 55);
 
 void Solution::generateRandomLayout() {
     // set width and height
@@ -43,6 +43,8 @@ void Solution::generateRandomLayout() {
 
     // generate bottom corner
     for (int i = 0; i < N; i++) {
+        int numberOfTries = 0;
+
         while (true) {
             int x = dist(mt);
             int y = dist(mt);
@@ -70,6 +72,9 @@ void Solution::generateRandomLayout() {
                 if (Rectangle::overlap(r1, r2))
                     exitLoop = false;
             }
+
+            if (++numberOfTries > MAX_NUMBER_OF_RANDOM_GUESSES)
+                throw runtime_exception;
 
             // continue if constraints are not met
             if (exitLoop)
@@ -136,10 +141,13 @@ void Solution::hamming(const int distance) {
             // generate position of random bit to flip
             if (dist(mt) % 2 == 0) {
                 int position;
+                int numberOfTries = 0;
                 do {
                     position = bitPosition(mt);
                     if (bits.find(position) == bits.end())
                         break;
+                    if (++numberOfTries > MAX_NUMBER_OF_RANDOM_GUESSES)
+                        throw runtime_exception;
                 } while (true);
 
                 // flip the bit
