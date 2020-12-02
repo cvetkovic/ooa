@@ -13,7 +13,7 @@
 using namespace std;
 
 constexpr int N = 23;
-constexpr int maximumIterations = 100;
+constexpr int maximumIterations = 10000;
 
 // 1 + 2 + ... 23 = 276
 
@@ -114,15 +114,17 @@ int main(int argc, char **argv) {
     int iteration = 0;
 
     Solution current(N);
+    current.generateRandomLayout();
+
     double currentCost = optimizationFunction(current);
     double globalMin = currentCost;
+
     Solution globalSolution(current);
 
-    constexpr int hammingMax = 64;
+    constexpr int hammingMax = 32;
     constexpr int hammingMin = 1;
 
     while (iteration < maximumIterations) {
-
         int distance = (hammingMin - hammingMax) * iteration / (maximumIterations - 1) + hammingMax;
         current.hamming(distance);
 
@@ -143,12 +145,13 @@ int main(int argc, char **argv) {
 
         if (currentCost < globalMin) {
             globalMin = currentCost;
+            globalSolution = current;
         }
 
         iteration++;
     }
 
-    writeToFile(current);
+    writeToFile(globalSolution);
     cout << "Minimum score is: " << setprecision(10) << globalMin << endl;
 
     return 0;

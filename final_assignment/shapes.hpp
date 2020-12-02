@@ -10,6 +10,7 @@
 #include <limits>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -100,14 +101,11 @@ protected:
     static mt19937 mt;
     static uniform_int_distribution<int> dist;
 
-    void generateRandomLayout();
-
     int canvasSizeX, canvasSizeY;
 
 public:
     Solution(const int N) : N(N) {
         rectangles = new Rectangle[N];
-        generateRandomLayout();
     }
 
     Solution(const Solution &copyFrom) : N(copyFrom.N) {
@@ -119,7 +117,7 @@ public:
         this->canvasSizeY = copyFrom.canvasSizeY;
     }
 
-    ~Solution() { delete rectangles; }
+    ~Solution() { delete[] rectangles; }
 
     const Rectangle *getRectangles() const { return rectangles; }
 
@@ -128,6 +126,16 @@ public:
     int getCanvasSizeY() const { return canvasSizeY; }
 
     void hamming(const int distance);
+
+    void generateRandomLayout();
+
+    Solution operator=(const Solution &from) {
+        Solution to(from.N);
+        for (int i = 0; i < from.N; i++)
+            to.rectangles[i] = from.rectangles[i];
+
+        return to;
+    }
 
 };
 

@@ -116,6 +116,7 @@ void Solution::hamming(const int distance) {
     int i = 0;
 
     static uniform_int_distribution<int> dist(0, 22);
+    static uniform_int_distribution<int> bitPosition(0, 5);
 
     // determine which rectangles to change
     while (i < distance) {
@@ -128,8 +129,50 @@ void Solution::hamming(const int distance) {
     }
 
     for (i = 0; i < N; i++) {
-        for (int j = 0; j < rectangleIndexMap[i]; j++) {
-            
+        int cnt = rectangleIndexMap[i];
+        unordered_set<int> bits;
+
+        while (cnt > 0) {
+            // generate position of random bit to flip
+            if (dist(mt) % 2 == 0) {
+                int position;
+                do {
+                    position = bitPosition(mt);
+                    if (bits.find(position) == bits.end())
+                        break;
+                } while (true);
+
+                // flip the bit
+                if (dist(mt) % 2 == 0)
+                    rectangles[i].bottomLeft.x ^= (1 << position);
+                else
+                    rectangles[i].bottomLeft.y ^= (1 << position);
+            } else
+                rectangles[i].rotate();
+
+            // check for constraints
+            if (Rectangle::outsideOfCanvas(rectangles[i]))
+                continue;
+
+            ////////////////////////////////
+            // check for constraints
+            ////////////////////////////////
+            bool decrementCnt = true;
+            for (int j = 0; j < N; j++) {
+                Rectangle &r1 = rectangles[i];
+                Rectangle &r2 = rectangles[j];
+
+                if (&r1 == &r2)
+                    continue;
+
+                if (Rectangle::overlap(r1, r2)) {
+                    decrementCnt = false;
+                    break;
+                }
+            }
+
+            if (decrementCnt)
+                cnt--;
         }
     }
 }
