@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -64,8 +65,13 @@ bool compareIndividuals(Individual *i1, Individual *i2) {
 vector<Individual *> selection(Population &population) {
     vector<Individual *> result, final;
 
-    for (int i = 0; i < numberOfIndividuals; i++)
+    //int64_t min = numeric_limits<int64_t>::max();
+
+    for (int i = 0; i < numberOfIndividuals; i++) {
         result.push_back(&population.individuals[i]);
+        /*if (population.individuals[i].cost < min)
+            min = population.individuals[i].cost;*/
+    }
 
     sort(result.begin(), result.end(), compareIndividuals);
 
@@ -113,7 +119,7 @@ void mutate(Population &population) {
     const int numberOfMutations = distNumberOfMutations(mt);
 
     for (int i = 0; i < numberOfMutations; i++) {
-        int mutationProbability = distMutation(mt);
+        double mutationProbability = distMutation(mt);
 
         if (mutationProbability < 0.2) {
             int individual = distIndividuals(mt);
@@ -132,26 +138,48 @@ void printIndividual(const Individual &individual) {
 }
 
 int main(int argc, char **argv) {
-    // initialize random population
-    Population initialPopulation;
-    for (int i = 0; i < numberOfIndividuals; i++) {
-        for (int j = 0; j < D; j++)
-            initialPopulation.individuals[i].genes[j] = dist(mt);
 
-        initialPopulation.individuals[i].cost = costFunction(initialPopulation.individuals[i].genes);
+    for (int t = 0; t < 20; t++) {
+        ofstream fileMin("minimum_" + std::to_string(t + 1) + ".txt");
+
+        int64_t globalMinimum = numeric_limits<int64_t>::max();
+        Population globalMinimumPopulation;
+
+        // initialize random population
+        Population initialPopulation;
+        for (int i = 0; i < numberOfIndividuals; i++) {
+            for (int j = 0; j < D; j++)
+                initialPopulation.individuals[i].genes[j] = dist(mt);
+
+            initialPopulation.individuals[i].cost = costFunction(initialPopulation.individuals[i].genes);
+        }
+        globalMinimumPopulation = initialPopulation;
+
+        constexpr int numberOfGenerations = 50;
+        for (int x = 0; x < numberOfGenerations; x++) {
+            const vector<Individual *> selectedIndividuals = selection(initialPopulation);
+            Population newPopulation = crossover(selectedIndividuals);
+            mutate(newPopulation);
+
+            initialPopulation = newPopulation;
+
+            int64_t currentBest = selection(initialPopulation)[0]->cost;
+            if (currentBest < globalMinimum) {
+                globalMinimum = currentBest;
+                globalMinimumPopulation = initialPopulation;
+            }
+
+            fileMin << globalMinimum << endl;
+        }
+
+        const Individual &bestIndividual = *selection(globalMinimumPopulation)[0];
+
+        cout << "Best score: " << bestIndividual.cost << endl;
+        printIndividual(bestIndividual);
+        cout << "------------------------------" << endl;
+
+        fileMin.close();
     }
-
-    constexpr int numberOfGenerations = 50;
-    for (int x = 0; x < numberOfGenerations; x++) {
-        const vector<Individual *> selectedIndividuals = selection(initialPopulation);
-        Population newPopulation = crossover(selectedIndividuals);
-        mutate(newPopulation);
-
-        initialPopulation = newPopulation;
-        // TODO: determine quit condition
-    }
-
-    cout << initialPopulation.individuals[0].cost << endl;
 
     return 0;
 }

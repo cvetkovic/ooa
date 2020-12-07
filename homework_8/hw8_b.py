@@ -10,7 +10,7 @@ for x in range(1, 20):
 
     minimum.append(np.array(f.readlines()).astype(np.float))
 
-    plt.plot(minimum[x - 1])
+    plt.loglog(minimum[x - 1])
 
     f.close()
 
