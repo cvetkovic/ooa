@@ -25,6 +25,13 @@ bool Rectangle::outsideOfCanvas(const Rectangle &rectangle) {
         return false;
 }
 
+void Rectangle::setPosition(int x, int y, bool rotate) {
+    bottomLeft.x = x;
+    bottomLeft.y = y;
+    if (rotate)
+        this->rotate();
+}
+
 random_device Solution::rd;
 mt19937 Solution::mt(rd());
 uniform_int_distribution<int> Solution::dist(0, 60);

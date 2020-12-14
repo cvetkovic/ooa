@@ -33,15 +33,12 @@ struct Point {
 class Rectangle {
 
 protected:
-    Point bottomLeft;
     int width;
     int height;
 
-    Rectangle() {
-
-    }
-
 public:
+    Point bottomLeft;
+
     Rectangle(Point bottomLeft, const int width, const int height) :
             bottomLeft(bottomLeft), width(width), height(height) {}
 
@@ -91,6 +88,12 @@ public:
     friend class Solution;
 
     static bool outsideOfCanvas(const Rectangle &rectangle);
+
+    Rectangle() {
+
+    }
+
+    void setPosition(int x, int y, bool rotate);
 };
 
 class Solution {

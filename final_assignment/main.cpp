@@ -13,7 +13,7 @@
 using namespace std;
 
 constexpr int N = 23;
-constexpr int maximumIterations = 1000;
+constexpr int maximumIterations = 10000;
 
 // 1 + 2 + ... 23 = 276
 
@@ -49,7 +49,12 @@ inline double minimumDistanceBetweenVertices(const Rectangle &r1, const Rectangl
 }
 
 inline double optimizationFunction(const Solution &solution) {
-    double score = 0;
+    double score = 0.0;
+
+    /*score = solution.getCanvasSizeX() * solution.getCanvasSizeY();
+    for (int i = 0; i < N; i++)
+        score -= solution.getRectangles()[i].calculateArea();*/
+
     bool visited[N][N];
 
     for (int i = 0; i < N; i++) {
@@ -81,7 +86,7 @@ void writeToFile(const Solution &solution) {
     file.close();
 }
 
-int main(int argc, char **argv) {
+int main() {
 
 #ifdef CLASS_TEST
     ////////////////////////////
@@ -109,13 +114,14 @@ int main(int argc, char **argv) {
     mt19937 mt(rd());
     uniform_real_distribution<double> dist(0, 1);
 
-    const int numberOfSolutions = 25;
-    Solution **solutions = new Solution *[numberOfSolutions];
+    double total = 0;
+    const int numberOfSolutions = 10;
+    auto **solutions = new Solution *[numberOfSolutions];
 
 //#pragma omp parallel for
     for (int i = 0; i < numberOfSolutions; i++) {
         try {
-            double T_0 = 32 * 1024 * 1024;
+            constexpr double T_0 = 1000;
             int iteration = 0;
 
             Solution current(N);
@@ -126,9 +132,9 @@ int main(int argc, char **argv) {
 
             Solution globalSolution(current);
 
-            constexpr int hammingMax = 24;
-            constexpr int hammingMin = 1;
-#ifdef LOGARITMIC_COOLING_SCHEDULE
+            constexpr int hammingMax = 48;
+            constexpr int hammingMin = 10;
+#ifdef LOGARITHMIC_COOLING_SCHEDULE
             double T = T_0 / log(2);
 #else
             double T = T_0;
@@ -138,18 +144,17 @@ int main(int argc, char **argv) {
                 Solution tmp(current);
                 tmp.hamming(distance);
 
-                int64_t newCost = optimizationFunction(tmp);
-                int64_t dE = newCost - currentCost;
+                double newCost = optimizationFunction(tmp);
+                double dE = newCost - currentCost;
                 if (dE < 0) {
-                    globalSolution = current = tmp;
-                    globalMin = currentCost = newCost;
+                    current = tmp;
+                    currentCost = newCost;
                     current.setFinalScore(currentCost);
-                    globalSolution.setFinalScore(globalMin);
                 } else {
                     double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
                     double rnd = dist(mt);
 
-                    if (rnd < p) {
+                    if (rnd <= p) {
                         current = tmp;
                         currentCost = newCost;
                         current.setFinalScore(currentCost);
@@ -158,23 +163,37 @@ int main(int argc, char **argv) {
 
                 iteration++;
 
-#ifdef LOGARITMIC_COOLING_SCHEDULE
+#ifdef LOGARITHMIC_COOLING_SCHEDULE
                 T = T_0 / log(iteration + 1);
 #else
-                constexpr double alpha = 0.95;
+                constexpr double alpha = 0.999;
                 T *= alpha;
 #endif
+
+                if (currentCost < globalMin) {
+                    globalSolution = current;
+                    globalMin = currentCost;
+                    globalSolution.setFinalScore(globalMin);
+                }
+
+                if (iteration > 0 && iteration % 1000 == 0) {
+                    cout << "Iteration " << iteration << " has been finished." << endl;
+                    cout << "Current minimum: " << globalMin << endl;
+                    cout << "Current Hamming distance: " << distance << endl;
+                }
             }
 
             solutions[i] = new Solution(globalSolution);
-            cout << "Iteration " << i << " with a minimum score of " << globalMin << "." << endl;
+            //cout << "Iteration " << i << " with a minimum score of " << globalMin << "." << endl;
+
+            total += globalMin;
         }
         catch (const runtime_error &error) {
             cout << "Iteration " << i << " failed because maximum number of randomization was exceeded." << endl;
         }
     }
 
-    int cumulativeMinimum = numeric_limits<int>::max();
+    double cumulativeMinimum = numeric_limits<double>::max();
     int minIndex = -1;
     for (int i = 0; i < numberOfSolutions; i++) {
         if (solutions[i]->getFinalScore() < cumulativeMinimum) {
@@ -184,7 +203,9 @@ int main(int argc, char **argv) {
     }
 
     writeToFile(*solutions[minIndex]);
+    cout << "-------------------" << endl;
     cout << "Minimum score [" << minIndex << "] is: " << setprecision(10) << cumulativeMinimum << endl;
+    cout << "Average score is: " << setprecision(10) << total / numberOfSolutions << endl;
 
     for (int i = 0; i < numberOfSolutions; i++)
         delete solutions[i];

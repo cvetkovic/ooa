@@ -138,7 +138,6 @@ void printIndividual(const Individual &individual) {
 }
 
 int main(int argc, char **argv) {
-
     for (int t = 0; t < 20; t++) {
         ofstream fileMin("minimum_" + std::to_string(t + 1) + ".txt");
 
