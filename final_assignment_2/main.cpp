@@ -2,15 +2,27 @@
 // Created by jugos000 on 14-Dec-20.
 //
 
+#include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <vector>
 
 using namespace std;
 
+constexpr int NUMBER_OF_ITERATIONS = 500000;
+#ifndef LOGARITHMIC_COOLING_SCHEDULE
+static_assert(NUMBER_OF_ITERATIONS > 10000,
+              "Use logarithmic cooling to support number of iterations greater than 10000.");
+#endif
+
 constexpr int N = 23;
 static_assert(N == 23);
+
+#ifdef DEBUG
+constexpr int DEBUG_MAX_PLACEMENT = N;
+#endif
 
 struct Point {
     int x;
@@ -30,9 +42,13 @@ struct Rectangle {
     Point getTopRight() const {
         return Point(bottomLeft.x + width, bottomLeft.y + height);
     }
+
+    void rotate() {
+        swap(width, height);
+    }
 };
 
-void updatePlacementPoints(vector<Point> &placementPoints, const int pointToRemoveIndex, Rectangle &rectangle) {
+inline void updatePlacementPoints(vector<Point> &placementPoints, const int pointToRemoveIndex, Rectangle &rectangle) {
     placementPoints.erase(placementPoints.begin() + pointToRemoveIndex);
 
     Point up(rectangle.bottomLeft.x, rectangle.bottomLeft.y + rectangle.height);
@@ -66,7 +82,7 @@ bool isPlacementValid(vector<Rectangle> &placedRectangles, Rectangle &rectangle,
     return true;
 }
 
-void determineImageSize(vector<Rectangle> &rectangles, int &sizeX, int &sizeY) {
+void determineImageSize(const vector<Rectangle> &rectangles, int &sizeX, int &sizeY) {
     sizeX = numeric_limits<int>::min();
     sizeY = numeric_limits<int>::min();
 
@@ -79,81 +95,159 @@ void determineImageSize(vector<Rectangle> &rectangles, int &sizeX, int &sizeY) {
     }
 }
 
+inline int optimizationFunction(const vector<Rectangle> &rectangles) {
+    constexpr int rectangleTotalSum = 2300;
+
+    int sizeX, sizeY;
+    determineImageSize(rectangles, sizeX, sizeY);
+
+    return sizeX * sizeY - rectangleTotalSum;
+}
+
 int main() {
     random_device rd;
     mt19937 mt(rd());
 
+    constexpr double T_0 = 4000.0;
+
+    int iteration = 0;
+    vector<Rectangle> bestSolution, currentSolution;
+    int currentScore;
+    int bestScore = numeric_limits<int>::max();
+
+#ifdef LOGARITHMIC_COOLING_SCHEDULE
+    double T = T_0 / log(2);
+#else
+    double T = T_0;
+#endif
+
+    while (iteration < NUMBER_OF_ITERATIONS) {
+        vector<Rectangle> unplacedRectangles;
+        vector<Rectangle> placedRectangles;
+        vector<Point> placementPointCandidates;
+
+        placementPointCandidates.emplace_back(0, 0);
+        for (int i = 0; i < N; i++)
+            unplacedRectangles.emplace_back(i + 1, 23 - i);
+
+        int i = 0;
+
+        while (!unplacedRectangles.empty()) {
+#ifdef DEBUG
+            if (i >= DEBUG_MAX_PLACEMENT)
+                break;
+
+            int indexOfRectangle;
+            int indexOfCandidatePoint;
+
+            if (i == 0) {
+                indexOfRectangle = 4;
+                indexOfCandidatePoint = 0;
+            } else if (i == 1) {
+                indexOfRectangle = 7;
+                indexOfCandidatePoint = 0;
+            } else if (i == 2) {
+                indexOfRectangle = 9;
+                indexOfCandidatePoint = 2;
+            } else if (i == 3) {
+                indexOfRectangle = 3;
+                indexOfCandidatePoint = 1;
+            } else
+                throw runtime_error("Not implemented yet.");
+
+            Rectangle &rectangle = unplacedRectangles[indexOfRectangle];
+            Point &candidatePoint = placementPointCandidates[indexOfCandidatePoint];
+#else
+            uniform_int_distribution<int> randomRectangle(0, unplacedRectangles.size() - 1);
+            uniform_int_distribution<int> randomPoint(0, placementPointCandidates.size() - 1);
+
+            static uniform_real_distribution<double> randomRotate(0, 1);
+
+            const int indexOfRectangle = randomRectangle(mt);
+            Rectangle &rectangle = unplacedRectangles[indexOfRectangle];
+            const int indexOfCandidatePoint = randomPoint(mt);
+            Point &candidatePoint = placementPointCandidates[indexOfCandidatePoint];
+
+            if (randomRotate(mt) > 0.5)
+                rectangle.rotate();
+#endif
+
+            if (isPlacementValid(placedRectangles, rectangle, candidatePoint)) {
+                rectangle.bottomLeft = candidatePoint;
+
+                updatePlacementPoints(placementPointCandidates, indexOfCandidatePoint, rectangle);
+
+                placedRectangles.push_back(rectangle);
+                unplacedRectangles.erase(unplacedRectangles.begin() + indexOfRectangle);
+
+                i++;
+            }
+        }
+
+        if (iteration != 0) {
+            int newScore = optimizationFunction(placedRectangles);
+            int64_t dE = newScore - currentScore;
+            if (dE < 0) {
+                currentScore = newScore;
+                currentSolution = placedRectangles;
+            } else {
+                static uniform_real_distribution<double> annealingGenerator(0, 1);
+
+                if (T < 0.1) {
+                    cout << "Increase initial temperature to support " << NUMBER_OF_ITERATIONS << " iterations.";
+                    return 1;
+                }
+
+                double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
+                double rnd = annealingGenerator(mt);
+
+                if (rnd < p) {
+                    currentScore = newScore;
+                    currentSolution = placedRectangles;
+                }
+            }
+
+#ifdef LOGARITHMIC_COOLING_SCHEDULE
+            T = T_0 / log(iteration + 1);
+#else
+            constexpr double alpha = 0.999;
+            T *= alpha;
+#endif
+
+            if (currentScore < bestScore) {
+                bestSolution = currentSolution;
+                bestScore = currentScore;
+            }
+        } else {
+            currentScore = optimizationFunction(placedRectangles);
+            currentSolution = placedRectangles;
+        }
+
+        iteration++;
+
+        if (iteration % 10000 == 0)
+            cout << "Progress: " << setprecision(3) << 100.0 * iteration / NUMBER_OF_ITERATIONS << "%" << endl;
+    }
+
     fstream file;
     file.open("fa_layout.txt", fstream::out | fstream::trunc);
 
-    vector<Rectangle> unplacedRectangles;
-    vector<Rectangle> placedRectangles;
-    vector<Point> placementPointCandidates;
-
-    placementPointCandidates.push_back(Point(0, 0));
-    for (int i = 0; i < N; i++)
-        unplacedRectangles.push_back(Rectangle(i + 1, 23 - i));
-
-    constexpr int DEBUG_MAX_PLACEMENT = N;
-    int i = 0;
-
-    while (!unplacedRectangles.empty()) {
-        if (i >= DEBUG_MAX_PLACEMENT)
-            break;
-
-        uniform_int_distribution<int> randomRectangle(0, unplacedRectangles.size() - 1);
-        uniform_int_distribution<int> randomPoint(0, placementPointCandidates.size() - 1);
-
-#ifdef DEBUG
-        int indexOfRectangle;
-        int indexOfCandidatePoint;
-
-        if (i == 0) {
-            indexOfRectangle = 4;
-            indexOfCandidatePoint = 0;
-        } else if (i == 1) {
-            indexOfRectangle = 7;
-            indexOfCandidatePoint = 0;
-        } else if (i == 2) {
-            indexOfRectangle = 9;
-            indexOfCandidatePoint = 2;
-        } else if (i == 3) {
-            indexOfRectangle = 3;
-            indexOfCandidatePoint = 1;
-        } else
-            throw runtime_error("Not implemented yet.");
-
-        Rectangle &rectangle = unplacedRectangles[indexOfRectangle];
-        Point &candidatePoint = placementPointCandidates[indexOfCandidatePoint];
-#else
-        const int indexOfRectangle = randomRectangle(mt);
-        Rectangle &rectangle = unplacedRectangles[indexOfRectangle];
-        const int indexOfCandidatePoint = randomPoint(mt);
-        Point &candidatePoint = placementPointCandidates[indexOfCandidatePoint];
-#endif
-
-        if (isPlacementValid(placedRectangles, rectangle, candidatePoint)) {
-            rectangle.bottomLeft = candidatePoint;
-
-            updatePlacementPoints(placementPointCandidates, indexOfCandidatePoint, rectangle);
-
-            placedRectangles.push_back(rectangle);
-            unplacedRectangles.erase(unplacedRectangles.begin() + indexOfRectangle);
-
-            i++;
-        }
-    }
-
     int canvasX, canvasY;
-    determineImageSize(placedRectangles, canvasX, canvasY);
+    determineImageSize(bestSolution, canvasX, canvasY);
     file << canvasX << endl;
     file << canvasY << endl;
+#ifdef DEBUG
     file << DEBUG_MAX_PLACEMENT;
+#else
+    file << N;
+#endif
 
-    for (auto &r : placedRectangles)
+    for (auto &r : bestSolution)
         file << endl << r.bottomLeft.x << " " << r.bottomLeft.y << " " << r.width << " " << r.height;
 
     file.close();
+
+    cout << "Best score: " << optimizationFunction(bestSolution) << endl;
 
     return 0;
 }
