@@ -12,10 +12,10 @@
 using namespace std;
 
 constexpr int NUMBER_OF_ITERATIONS = 500000;
-#ifndef LOGARITHMIC_COOLING_SCHEDULE
+/*#ifndef LOGARITHMIC_COOLING_SCHEDULE
 static_assert(NUMBER_OF_ITERATIONS > 10000,
               "Use logarithmic cooling to support number of iterations greater than 10000.");
-#endif
+#endif*/
 
 constexpr int N = 23;
 static_assert(N == 23);
@@ -108,7 +108,7 @@ int main() {
     random_device rd;
     mt19937 mt(rd());
 
-    constexpr double T_0 = 4000.0;
+    constexpr double T_0 = 1000.0;
 
     int iteration = 0;
     vector<Rectangle> bestSolution, currentSolution;
@@ -193,10 +193,10 @@ int main() {
             } else {
                 static uniform_real_distribution<double> annealingGenerator(0, 1);
 
-                if (T < 0.1) {
+                /*if (T < 0.1) {
                     cout << "Increase initial temperature to support " << NUMBER_OF_ITERATIONS << " iterations.";
                     return 1;
-                }
+                }*/
 
                 double p = (dE == 0 ? 0.5 : exp(-1.0 * dE / T));
                 double rnd = annealingGenerator(mt);
@@ -225,8 +225,10 @@ int main() {
 
         iteration++;
 
-        if (iteration % 10000 == 0)
+        if (iteration % 10000 == 0) {
             cout << "Progress: " << setprecision(3) << 100.0 * iteration / NUMBER_OF_ITERATIONS << "%" << endl;
+            cout << "Current minimum: " << bestScore << endl;
+        }
     }
 
     fstream file;
