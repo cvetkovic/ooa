@@ -33,7 +33,7 @@ struct population {
 
 inline double y_training(double x) {
     if (x < -1 || x > 1)
-        throw runtime_error("Invalid argument");
+        throw runtime_error("Invalid y_training argument");
 
     return 0.5 * sin(PI * x);
 }
@@ -63,7 +63,7 @@ inline void selection(population &p) {
     static uniform_real_distribution<double> F_generator(0, 2);
     static uniform_int_distribution<int> index_generator(0, NUMBER_OF_GENERATIONS - 1);
 
-    for (int i = 0; i < POPULATION_SIZE; i++) {
+    for (int t = 0; t < POPULATION_SIZE; t++) {
         w_vector z;
         double F = F_generator(mt);
 
@@ -100,7 +100,7 @@ inline void selection(population &p) {
                 break;
         }
 
-        p.z_vectors[i] = z;
+        p.z_vectors[t] = z;
     }
 }
 
