@@ -28,25 +28,27 @@ struct point {
 
     point(double x, double y, double z) : x(x), y(y), z(z) {}
 
-    point operator+(const point &p) {
+    point operator+(const point &p) const {
         return point(p.x + x, p.y + y, p.z + z);
     }
 
-    point operator*(double w) {
+    point operator*(double w) const {
         return point(w * x, w * y, w * z);
     }
 
     friend ostream &operator<<(ostream &os, const point &p) {
-        os << "(" << fixed << setprecision(2) << p.x << ", " << fixed << setprecision(2) << p.y << ", " << fixed << setprecision(2) << p.z << ")";
+        os << "(" << fixed << setprecision(2) << p.x << ", " << fixed << setprecision(2) << p.y << ", " << fixed
+           << setprecision(2) << p.z << ")";
         return os;
     }
 };
 
+const point A(1, 5, 1);
+const point B(3, 2, 0);
+const point C(5, 6, 1);
+const point D(6, 3, 3);
+
 struct solution {
-    const point A;
-    const point B;
-    const point C;
-    const point D;
     point S1;
     point S2;
 
@@ -63,11 +65,7 @@ struct solution {
             v1(v1),
             v2(v2),
             bestS1(s1),
-            bestS2(s2),
-            A(1, 5, 1),
-            B(3, 2, 0),
-            C(5, 6, 1),
-            D(6, 3, 3) {}
+            bestS2(s2) {}
 
     void updateSpeed(const solution &g) {
         static uniform_real_distribution<double> r(0, 1);
@@ -97,11 +95,11 @@ inline double euclideanDistance(const point &p1, const point &p2) {
 }
 
 inline double optimizationFunction(const solution &s) {
-    double a_s1 = euclideanDistance(s.A, s.S1);
-    double b_s1 = euclideanDistance(s.B, s.S1);
+    double a_s1 = euclideanDistance(A, s.S1);
+    double b_s1 = euclideanDistance(B, s.S1);
     double s1_s2 = euclideanDistance(s.S1, s.S2);
-    double c_s2 = euclideanDistance(s.C, s.S2);
-    double d_s2 = euclideanDistance(s.D, s.S2);
+    double c_s2 = euclideanDistance(C, s.S2);
+    double d_s2 = euclideanDistance(D, s.S2);
 
     return a_s1 + b_s1 + s1_s2 + c_s2 + d_s2;
 }
@@ -115,7 +113,7 @@ int main() {
                point(0.01, 0.01, 0.01));
     long iteration = 0;
 
-    solution **swarm = new solution *[SWARM_DIMENSION];
+    auto **swarm = new solution *[SWARM_DIMENSION];
 
     for (int i = 0; i < SWARM_DIMENSION; i++) {
         static uniform_real_distribution<double> xyGenerator(0, 10);
